@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Sample data extraction rules file; uncomment and customize as necessary.
+   See https://developer.android.com/guide/topics/data/autobackup#IncludingFiles
+   for details.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="file" path="." />
+        <exclude domain="file" path="[Ljava.lang.String;@2d2e23e" />
+    </cloud-backup>
+</data-extraction-rules>

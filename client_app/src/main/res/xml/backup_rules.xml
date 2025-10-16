@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Sample backup rules file; uncomment and customize as necessary.
+   See https://developer.android.com/guide/topics/data/autobackup#IncludingFiles
+   for details.
+-->
+<full-backup-content>
+    <!--
+         If you specify an @exclude rule here, you should also specify an @include rule for all
+         files that you want to backup.
+
+         <exclude domain="database" path=".*" />
+         <include domain="database" path="my_database.db" />
+    -->
+</full-backup-content>

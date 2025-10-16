@@ -5,6 +5,8 @@ color colorPrimary
 color colorPrimaryDark
 drawable ic_foreground
 drawable ic_foreground_round
+drawable ic_launcher_background
+drawable ic_launcher_foreground
 mipmap ic_launcher
 mipmap ic_launcher_round
 string app_name

@@ -60,7 +60,7 @@ class BluetoothLeService : Service() {
 
         if (!bluetoothAdapter.isEnabled) {
             Log.e(TAG, "Bluetooth is not enabled.")
-            // In a real app, you'd prompt the user to enable Bluetooth
+            // In a real app, you\'d prompt the user to enable Bluetooth
             return
         }
 
@@ -121,7 +121,7 @@ class BluetoothLeService : Service() {
             offset: Int,
             value: ByteArray?
         ) {
-            super.onDescriptorWriteRequest(device, requestId, offset, descriptor, preparedWrite, responseNeeded, value)
+            super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value)
             if (descriptor?.uuid == CLIENT_CHARACTERISTIC_CONFIG_UUID) {
                 if (value != null && value.contentEquals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
                     Log.d(TAG, "Enable notifications for device: ${device?.address}")

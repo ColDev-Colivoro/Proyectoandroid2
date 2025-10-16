@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import android.content.Context
+import android.util.Log
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.runtime.*

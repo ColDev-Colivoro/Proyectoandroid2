@@ -1,5 +1,6 @@
 package com.example.dashboard_app
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -12,10 +13,13 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.core.content.ContextCompat
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.UUID
@@ -46,6 +50,19 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
             return
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "BLUETOOTH_SCAN permission not granted.")
+                return
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "ACCESS_FINE_LOCATION permission not granted.")
+                return
+            }
+        }
+
         val scanner = bluetoothAdapter.bluetoothLeScanner ?: run {
             Log.e(TAG, "Bluetooth LE Scanner not available.")
             return
@@ -64,6 +81,18 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
     }
 
     fun stopScan() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "BLUETOOTH_SCAN permission not granted. Cannot stop scan.")
+                return
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "ACCESS_FINE_LOCATION permission not granted. Cannot stop scan.")
+                return
+            }
+        }
         val scanner = bluetoothAdapter.bluetoothLeScanner
         scanner?.stopScan(scanCallback)
         Log.d(TAG, "BLE Scan stopped.")
@@ -86,6 +115,12 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
     }
 
     private fun connectToDevice(device: BluetoothDevice) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted.")
+                return
+            }
+        }
         bluetoothGatt = device.connectGatt(context, false, gattCallback)
         Log.d(TAG, "Connecting to GATT server on device: ${device.address}")
     }
@@ -95,6 +130,12 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
             super.onConnectionStateChange(gatt, status, newState)
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connected to GATT server.")
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                        Log.w(TAG, "BLUETOOTH_CONNECT permission not granted.")
+                        return
+                    }
+                }
                 gatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Disconnected from GATT server.")
@@ -109,6 +150,12 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
                 counterCharacteristic = service?.getCharacteristic(COUNTER_CHARACTERISTIC_UUID)
 
                 counterCharacteristic?.let { characteristic ->
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                            Log.w(TAG, "BLUETOOTH_CONNECT permission not granted.")
+                            return
+                        }
+                    }
                     gatt?.setCharacteristicNotification(characteristic, true)
                     val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
                     descriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
@@ -123,12 +170,12 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
         }
 
         override fun onCharacteristicChanged(
-            gatt: BluetoothGatt?,
-            characteristic: BluetoothGattCharacteristic?,
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
             super.onCharacteristicChanged(gatt, characteristic, value)
-            if (characteristic?.uuid == COUNTER_CHARACTERISTIC_UUID) {
+            if (characteristic.uuid == COUNTER_CHARACTERISTIC_UUID) {
                 val counter = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt()
                 handler.post { onCounterUpdate(counter) }
                 Log.d(TAG, "Received counter update: $counter")
@@ -144,6 +191,12 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
     }
 
     fun close() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot close BluetoothGatt.")
+                return
+            }
+        }
         bluetoothGatt?.close()
         bluetoothGatt = null
         Log.d(TAG, "BluetoothGatt closed.")

@@ -2,6 +2,7 @@ package com.example.client_app
 
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
@@ -20,6 +21,7 @@ import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class BluetoothLeService : Service() {
 
@@ -33,11 +35,16 @@ class BluetoothLeService : Service() {
     private var advertisingCallback: AdvertiseCallback? = null
 
     private var counterCharacteristic: BluetoothGattCharacteristic? = null
+    private var resetCharacteristic: BluetoothGattCharacteristic? = null
+
+    // Store devices that have enabled notifications for the counter characteristic
+    private val registeredDevices = ConcurrentHashMap<BluetoothDevice, Boolean>()
 
     // UUIDs for our custom BLE service and characteristic
     val SERVICE_UUID: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb") // Heart Rate Service for example
     val COUNTER_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb") // Heart Rate Measurement Characteristic for example
     val CLIENT_CHARACTERISTIC_CONFIG_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    val RESET_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A39-0000-1000-8000-00805f9b34fb") // Example for Heart Rate Control Point
 
     var currentCounterValue: Int = 0
         set(value) {
@@ -84,6 +91,15 @@ class BluetoothLeService : Service() {
         )
         counterCharacteristic?.addDescriptor(configDescriptor)
         service.addCharacteristic(counterCharacteristic)
+
+        // Add Reset Characteristic
+        resetCharacteristic = BluetoothGattCharacteristic(
+            RESET_CHARACTERISTIC_UUID,
+            BluetoothGattCharacteristic.PROPERTY_WRITE,
+            BluetoothGattCharacteristic.PERMISSION_WRITE
+        )
+        service.addCharacteristic(resetCharacteristic)
+
         bluetoothGattServer?.addService(service)
         Log.d(TAG, "GATT server setup complete.")
     }
@@ -95,6 +111,9 @@ class BluetoothLeService : Service() {
                 Log.d(TAG, "Device connected: ${device?.address}")
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Device disconnected: ${device?.address}")
+                device?.let {
+                    registeredDevices.remove(it)
+                }
             }
         }
 
@@ -112,6 +131,28 @@ class BluetoothLeService : Service() {
             }
         }
 
+        override fun onCharacteristicWriteRequest(
+            device: BluetoothDevice?,
+            requestId: Int,
+            characteristic: BluetoothGattCharacteristic?,
+            preparedWrite: Boolean,
+            responseNeeded: Boolean,
+            offset: Int,
+            value: ByteArray?
+        ) {
+            super.onCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value)
+            if (characteristic?.uuid == RESET_CHARACTERISTIC_UUID) {
+                if (value != null && value.isNotEmpty()) {
+                    currentCounterValue = 0
+                    Log.d(TAG, "Counter reset by device: ${device?.address}. New value: $currentCounterValue")
+                    updateCharacteristicValue(currentCounterValue) // Notify connected clients of the reset
+                }
+                if (responseNeeded) {
+                    bluetoothGattServer?.sendResponse(device, requestId, android.bluetooth.BluetoothGatt.GATT_SUCCESS, offset, null)
+                }
+            }
+        }
+
         override fun onDescriptorWriteRequest(
             device: android.bluetooth.BluetoothDevice?,
             requestId: Int,
@@ -123,11 +164,14 @@ class BluetoothLeService : Service() {
         ) {
             super.onDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value)
             if (descriptor?.uuid == CLIENT_CHARACTERISTIC_CONFIG_UUID) {
-                if (value != null && value.contentEquals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
-                    Log.d(TAG, "Enable notifications for device: ${device?.address}")
-                    // Store the device to send notifications later
-                } else if (value != null && value.contentEquals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
-                    Log.d(TAG, "Disable notifications for device: ${device?.address}")
+                if (value != null && device != null) {
+                    if (value.contentEquals(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)) {
+                        registeredDevices[device] = true
+                        Log.d(TAG, "Enable notifications for device: ${device.address}")
+                    } else if (value.contentEquals(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)) {
+                        registeredDevices.remove(device)
+                        Log.d(TAG, "Disable notifications for device: ${device.address}")
+                    }
                 }
                 if (responseNeeded) {
                     bluetoothGattServer?.sendResponse(device, requestId, android.bluetooth.BluetoothGatt.GATT_SUCCESS, offset, null)
@@ -155,7 +199,7 @@ class BluetoothLeService : Service() {
             .build()
 
         advertisingCallback = object : AdvertiseCallback() {
-            override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
+            override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
                 super.onStartSuccess(settingsInEffect)
                 Log.d(TAG, "BLE Advertising started successfully.")
             }
@@ -178,10 +222,11 @@ class BluetoothLeService : Service() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun updateCharacteristicValue(value: Int) {
         counterCharacteristic?.let { characteristic ->
-            characteristic.value = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array()
-            bluetoothGattServer?.getConnectedDevices()?.forEach { device ->
+            characteristic.setValue(value, BluetoothGattCharacteristic.FORMAT_UINT32, 0)
+            for (device in registeredDevices.keys) {
                 bluetoothGattServer?.notifyCharacteristicChanged(device, characteristic, false)
             }
             Log.d(TAG, "Characteristic value updated to: $value")

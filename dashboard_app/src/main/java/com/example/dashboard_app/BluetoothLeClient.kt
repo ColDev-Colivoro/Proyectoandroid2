@@ -31,11 +31,13 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private var bluetoothGatt: BluetoothGatt? = null
     private var counterCharacteristic: BluetoothGattCharacteristic? = null
+    private var resetCharacteristic: BluetoothGattCharacteristic? = null
 
     // UUIDs for our custom BLE service and characteristic (must match Client app)
     val SERVICE_UUID: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb")
     val COUNTER_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb")
     val CLIENT_CHARACTERISTIC_CONFIG_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    val RESET_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A39-0000-1000-8000-00805f9b34fb")
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -148,6 +150,7 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 val service = gatt?.getService(SERVICE_UUID)
                 counterCharacteristic = service?.getCharacteristic(COUNTER_CHARACTERISTIC_UUID)
+                resetCharacteristic = service?.getCharacteristic(RESET_CHARACTERISTIC_UUID)
 
                 counterCharacteristic?.let { characteristic ->
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -158,8 +161,20 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
                     }
                     gatt?.setCharacteristicNotification(characteristic, true)
                     val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
-                    descriptor?.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    gatt?.writeDescriptor(descriptor)
+                    if (descriptor != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            gatt?.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot write descriptor.")
+                                return
+                            }
+                            @Suppress("DEPRECATION")
+                            gatt?.writeDescriptor(descriptor)
+                        }
+                    }
                     Log.d(TAG, "Services discovered and notifications enabled.")
                 } ?: run {
                     Log.e(TAG, "Counter characteristic not found.")
@@ -184,10 +199,30 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
     }
 
     fun sendResetSignal() {
-        // This would typically involve writing to a specific characteristic on the client
-        // For now, we'll just log it.
-        Log.d(TAG, "Sending reset signal to client (not yet implemented via BLE).")
-        // In a full implementation, you'd define a characteristic for reset and write to it.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot send reset signal.")
+                return
+            }
+        }
+
+        resetCharacteristic?.let { characteristic ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                bluetoothGatt?.writeCharacteristic(characteristic, byteArrayOf(1), BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT)
+            } else {
+                @Suppress("DEPRECATION")
+                characteristic.setValue(byteArrayOf(1)) // A simple byte array to signify a reset
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                    Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot write characteristic.")
+                    return
+                }
+                @Suppress("DEPRECATION")
+                bluetoothGatt?.writeCharacteristic(characteristic)
+            }
+            Log.d(TAG, "Sending reset signal to client.")
+        } ?: run {
+            Log.e(TAG, "Reset characteristic not found. Cannot send reset signal.")
+        }
     }
 
     fun close() {

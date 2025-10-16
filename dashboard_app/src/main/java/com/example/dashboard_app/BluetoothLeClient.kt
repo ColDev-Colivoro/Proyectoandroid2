@@ -23,55 +23,52 @@ import androidx.core.content.ContextCompat
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.UUID
+import android.annotation.SuppressLint
 
 class BluetoothLeClient(private val context: Context, private val onCounterUpdate: (Int) -> Unit, private val onResetReceived: () -> Unit) {
 
-    private val TAG = "BluetoothLeClient"
+    private val tag = "BluetoothLeClient"
 
-    private lateinit var bluetoothAdapter: BluetoothAdapter
+    private val bluetoothAdapter: BluetoothAdapter = (context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager).adapter
     private var bluetoothGatt: BluetoothGatt? = null
     private var counterCharacteristic: BluetoothGattCharacteristic? = null
     private var resetCharacteristic: BluetoothGattCharacteristic? = null
 
     // UUIDs for our custom BLE service and characteristic (must match Client app)
-    val SERVICE_UUID: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb")
-    val COUNTER_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb")
-    val CLIENT_CHARACTERISTIC_CONFIG_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-    val RESET_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A39-0000-1000-8000-00805f9b34fb")
+    val serviceUuid: UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb")
+    val counterCharacteristicUuid: UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb")
+    val clientCharacteristicConfigUuid: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+    val resetCharacteristicUuid: UUID = UUID.fromString("00002A39-0000-1000-8000-00805f9b34fb")
 
     private val handler = Handler(Looper.getMainLooper())
 
-    init {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as android.bluetooth.BluetoothManager
-        bluetoothAdapter = bluetoothManager.adapter
-    }
-
+    @SuppressLint("MissingPermission")
     fun startScan() {
         if (!bluetoothAdapter.isEnabled) {
-            Log.e(TAG, "Bluetooth is not enabled.")
+            Log.e(tag, "Bluetooth is not enabled.")
             return
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "BLUETOOTH_SCAN permission not granted.")
+                Log.w(tag, "BLUETOOTH_SCAN permission not granted.")
                 return
             }
         } else {
             @Suppress("DEPRECATION")
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "ACCESS_FINE_LOCATION permission not granted.")
+                Log.w(tag, "ACCESS_FINE_LOCATION permission not granted.")
                 return
             }
         }
 
         val scanner = bluetoothAdapter.bluetoothLeScanner ?: run {
-            Log.e(TAG, "Bluetooth LE Scanner not available.")
+            Log.e(tag, "Bluetooth LE Scanner not available.")
             return
         }
 
         val scanFilter = ScanFilter.Builder()
-            .setServiceUuid(ParcelUuid(SERVICE_UUID))
+            .setServiceUuid(ParcelUuid(serviceUuid))
             .build()
 
         val scanSettings = ScanSettings.Builder()
@@ -79,32 +76,34 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
             .build()
 
         scanner.startScan(listOf(scanFilter), scanSettings, scanCallback)
-        Log.d(TAG, "BLE Scan started.")
+        Log.d(tag, "BLE Scan started.")
     }
 
+    @SuppressLint("MissingPermission")
     fun stopScan() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "BLUETOOTH_SCAN permission not granted. Cannot stop scan.")
+                Log.w(tag, "BLUETOOTH_SCAN permission not granted. Cannot stop scan.")
                 return
             }
         } else {
             @Suppress("DEPRECATION")
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "ACCESS_FINE_LOCATION permission not granted. Cannot stop scan.")
+                Log.w(tag, "ACCESS_FINE_LOCATION permission not granted. Cannot stop scan.")
                 return
             }
         }
         val scanner = bluetoothAdapter.bluetoothLeScanner
         scanner?.stopScan(scanCallback)
-        Log.d(TAG, "BLE Scan stopped.")
+        Log.d(tag, "BLE Scan stopped.")
     }
 
     private val scanCallback = object : ScanCallback() {
+        @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
             result?.device?.let { device ->
-                Log.d(TAG, "Found BLE device: ${device.name} (${device.address})")
+                Log.d(tag, "Found BLE device: ${device.name} (${device.address})")
                 stopScan()
                 connectToDevice(device)
             }
@@ -112,55 +111,58 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
 
         override fun onScanFailed(errorCode: Int) {
             super.onScanFailed(errorCode)
-            Log.e(TAG, "BLE Scan failed: $errorCode")
+            Log.e(tag, "BLE Scan failed: $errorCode")
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun connectToDevice(device: BluetoothDevice) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted.")
+                Log.w(tag, "BLUETOOTH_CONNECT permission not granted.")
                 return
             }
         }
         bluetoothGatt = device.connectGatt(context, false, gattCallback)
-        Log.d(TAG, "Connecting to GATT server on device: ${device.address}")
+        Log.d(tag, "Connecting to GATT server on device: ${device.address}")
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
+        @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d(TAG, "Connected to GATT server.")
+                Log.d(tag, "Connected to GATT server.")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                        Log.w(TAG, "BLUETOOTH_CONNECT permission not granted.")
+                        Log.w(tag, "BLUETOOTH_CONNECT permission not granted.")
                         return
                     }
                 }
                 gatt?.discoverServices()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(TAG, "Disconnected from GATT server.")
+                Log.d(tag, "Disconnected from GATT server.")
                 close()
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                val service = gatt?.getService(SERVICE_UUID)
-                counterCharacteristic = service?.getCharacteristic(COUNTER_CHARACTERISTIC_UUID)
-                resetCharacteristic = service?.getCharacteristic(RESET_CHARACTERISTIC_UUID)
+                val service = gatt?.getService(serviceUuid)
+                counterCharacteristic = service?.getCharacteristic(counterCharacteristicUuid)
+                resetCharacteristic = service?.getCharacteristic(resetCharacteristicUuid)
 
                 counterCharacteristic?.let { characteristic ->
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                            Log.w(TAG, "BLUETOOTH_CONNECT permission not granted.")
+                            Log.w(tag, "BLUETOOTH_CONNECT permission not granted.")
                             return
                         }
                     }
                     gatt?.setCharacteristicNotification(characteristic, true)
-                    val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
+                    val descriptor = characteristic.getDescriptor(clientCharacteristicConfigUuid)
                     if (descriptor != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             gatt?.writeDescriptor(descriptor, BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
@@ -168,40 +170,45 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
                             @Suppress("DEPRECATION")
                             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
                             if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot write descriptor.")
+                                Log.w(tag, "BLUETOOTH_CONNECT permission not granted. Cannot write descriptor.")
                                 return
                             }
                             @Suppress("DEPRECATION")
                             gatt?.writeDescriptor(descriptor)
                         }
                     }
-                    Log.d(TAG, "Services discovered and notifications enabled.")
+                    Log.d(tag, "Services discovered and notifications enabled.")
                 } ?: run {
-                    Log.e(TAG, "Counter characteristic not found.")
+                    Log.e(tag, "Counter characteristic not found.")
                 }
             } else {
-                Log.e(TAG, "onServicesDiscovered received: $status")
+                Log.e(tag, "onServicesDiscovered received: $status")
             }
         }
 
+        @SuppressLint("MissingPermission")
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             value: ByteArray
         ) {
             super.onCharacteristicChanged(gatt, characteristic, value)
-            if (characteristic.uuid == COUNTER_CHARACTERISTIC_UUID) {
+            if (characteristic.uuid == counterCharacteristicUuid) {
                 val counter = ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getInt()
                 handler.post { onCounterUpdate(counter) }
-                Log.d(TAG, "Received counter update: $counter")
+                Log.d(tag, "Received counter update: $counter")
+            } else if (characteristic.uuid == resetCharacteristicUuid) {
+                handler.post { onResetReceived() }
+                Log.d(tag, "Received reset signal.")
             }
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun sendResetSignal() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot send reset signal.")
+                Log.w(tag, "BLUETOOTH_CONNECT permission not granted. Cannot send reset signal.")
                 return
             }
         }
@@ -213,27 +220,28 @@ class BluetoothLeClient(private val context: Context, private val onCounterUpdat
                 @Suppress("DEPRECATION")
                 characteristic.setValue(byteArrayOf(1)) // A simple byte array to signify a reset
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                    Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot write characteristic.")
+                    Log.w(tag, "BLUETOOTH_CONNECT permission not granted. Cannot write characteristic.")
                     return
                 }
                 @Suppress("DEPRECATION")
                 bluetoothGatt?.writeCharacteristic(characteristic)
             }
-            Log.d(TAG, "Sending reset signal to client.")
+            Log.d(tag, "Sending reset signal to client.")
         } ?: run {
-            Log.e(TAG, "Reset characteristic not found. Cannot send reset signal.")
+            Log.e(tag, "Reset characteristic not found. Cannot send reset signal.")
         }
     }
 
+    @SuppressLint("MissingPermission")
     fun close() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "BLUETOOTH_CONNECT permission not granted. Cannot close BluetoothGatt.")
+                Log.w(tag, "BLUETOOTH_CONNECT permission not granted. Cannot close BluetoothGatt.")
                 return
             }
         }
         bluetoothGatt?.close()
         bluetoothGatt = null
-        Log.d(TAG, "BluetoothGatt closed.")
+        Log.d(tag, "BluetoothGatt closed.")
     }
 }

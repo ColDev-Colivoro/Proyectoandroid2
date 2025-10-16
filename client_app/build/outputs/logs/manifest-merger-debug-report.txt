@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-31:12
-INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-31:12
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-34:12
+INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:1-34:12
 MERGED from [androidx.compose.material3:material3-android:1.3.0] C:\Users\the_8\.gradle\caches\8.13\transforms\0bcb1f5a294d6a45678a49d139f6bc1b\transformed\material3-release\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.material:material-android:1.7.0] C:\Users\the_8\.gradle\caches\8.13\transforms\0666d73798518c2b7a14755efc9e5162\transformed\material-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.material:material-ripple-android:1.7.0] C:\Users\the_8\.gradle\caches\8.13\transforms\a3328a3a6235220b7dcd1c89e94182ba\transformed\material-ripple-release\AndroidManifest.xml:2:1-7:12
@@ -60,21 +60,33 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\the_8\.gradle\cache
 		INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.BLUETOOTH
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:5:5-68
+	android:name
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:5:22-65
+uses-permission#android.permission.BLUETOOTH_ADMIN
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:6:5-74
+	android:name
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:6:22-71
 uses-permission#android.permission.BLUETOOTH_SCAN
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:5:5-73
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:7:5-73
 	android:name
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:5:22-70
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:7:22-70
 uses-permission#android.permission.BLUETOOTH_CONNECT
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:6:5-76
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:8:5-76
 	android:name
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:6:22-73
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:8:22-73
 uses-permission#android.permission.ACCESS_FINE_LOCATION
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:7:5-79
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:9:5-79
 	android:name
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:7:22-76
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:9:22-76
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:10:5-81
+	android:name
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:10:22-78
 application
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:9:5-29:19
-INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:9:5-29:19
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:12:5-32:19
+INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:12:5-32:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.0] C:\Users\the_8\.gradle\caches\8.13\transforms\d3f1da9f317967dbb70776a179476555\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.7.0] C:\Users\the_8\.gradle\caches\8.13\transforms\d3f1da9f317967dbb70776a179476555\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.7.0] C:\Users\the_8\.gradle\caches\8.13\transforms\76dedbab19011f10d14cd28ed0cc6d52\transformed\ui-test-manifest-1.7.0\AndroidManifest.xml:22:5-26:19
@@ -96,41 +108,41 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\the_8\.gradle\cach
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.1] C:\Users\the_8\.gradle\caches\8.13\transforms\5503f5d46aa818df81ceb80fa846a793\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:16:9-35
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:19:9-35
 	android:label
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:14:9-41
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:17:9-41
 	android:fullBackupContent
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:12:9-54
-	android:roundIcon
 		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:15:9-54
+	android:roundIcon
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:18:9-54
 	android:icon
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:13:9-43
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:16:9-43
 	android:allowBackup
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:10:9-35
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:13:9-35
 	android:theme
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:17:9-54
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:20:9-54
 	android:dataExtractionRules
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:11:9-65
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:14:9-65
 activity#com.example.client_app.MainActivity
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:18:9-28:20
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:21:9-31:20
 	android:label
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:21:13-45
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:24:13-45
 	android:exported
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:20:13-36
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:23:13-36
 	android:theme
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:22:13-58
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:25:13-58
 	android:name
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:19:13-41
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:22:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:23:13-27:29
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:26:13-30:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:24:17-69
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:27:17-69
 	android:name
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:24:25-66
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:27:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:26:17-77
+ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:29:17-77
 	android:name
-		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:26:27-74
+		ADDED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml:29:27-74
 uses-sdk
 INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\the_8\Proyectoandroid2\client_app\src\main\AndroidManifest.xml
